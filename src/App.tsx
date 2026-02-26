@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import AdminUpload from "./components/AdminUpload";
 import EventGallery from "./components/EventGallery";
+import CartPanel from "./components/CartPanel";
 
 type Event = {
   id: string;
@@ -53,6 +54,9 @@ export default function App() {
 
       {/* GALERÍA */}
       <EventGallery />
+
+      {/* CARRITO */}
+      <CartPanel />
     </div>
   );
 }

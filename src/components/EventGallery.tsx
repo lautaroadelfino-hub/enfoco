@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { addToCart } from "../lib/cart";
 
 type EventRow = {
   id: string;
@@ -110,9 +111,28 @@ export default function EventGallery() {
                     <img src={imgUrl} style={{ width: "100%", display: "block" }} />
                     <div style={{ padding: 10 }}>
                       <div style={{ fontWeight: 700 }}>${p.price_ars.toLocaleString("es-AR")}</div>
-                      <div style={{ opacity: 0.75 }}>
-                        Dorsal: {p.dorsal ?? "—"}
-                      </div>
+                      <div style={{ opacity: 0.75 }}>Dorsal: {p.dorsal ?? "—"}</div>
+
+                      <button
+                        onClick={() => {
+                          addToCart({
+                            photoId: p.id,
+                            price: p.price_ars,
+                            previewKey: p.preview_key,
+                            dorsal: p.dorsal
+                          });
+                          alert("Agregada al carrito ✅");
+                        }}
+                        style={{
+                          marginTop: 8,
+                          width: "100%",
+                          padding: "10px 12px",
+                          borderRadius: 10,
+                          fontWeight: 700
+                        }}
+                      >
+                        Agregar al carrito
+                      </button>
                     </div>
                   </div>
                 );
