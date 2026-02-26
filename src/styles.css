@@ -9,6 +9,9 @@
 }
 
 *{ box-sizing:border-box; }
+
+html { overflow-y: scroll; } /* evita el corrimiento por aparecer/desaparecer scrollbar */
+
 body{
   margin:0;
   background: radial-gradient(1200px 600px at 20% 0%, rgba(90,120,255,.15), transparent 60%),
@@ -103,9 +106,12 @@ a{ color: inherit; text-decoration: none; }
 .subtle{ color: var(--muted); }
 
 .hr{
-    html { overflow-y: scroll; } /* evita el corrimiento por aparecer/desaparecer scrollbar */
+  height:1px;
+  background: var(--border);
+  margin: 14px 0;
+}
 
-/* Layout fijo: sidebar + panel */
+/* ===== Layout fijo: sidebar + panel ===== */
 .layout {
   display: grid;
   grid-template-columns: 260px 1fr;
@@ -120,7 +126,7 @@ a{ color: inherit; text-decoration: none; }
 /* Sidebar fijo */
 .sidebar {
   position: sticky;
-  top: 70px; /* aprox altura de topbar */
+  top: 70px; /* altura aprox de topbar */
   padding: 12px;
 }
 
@@ -158,7 +164,7 @@ a{ color: inherit; text-decoration: none; }
 /* Panel principal estable */
 .mainCard {
   padding: 16px;
-  min-height: calc(100vh - 110px); /* mantiene alto estable */
+  min-height: calc(100vh - 110px);
 }
 
 .pageHead {
@@ -174,10 +180,10 @@ a{ color: inherit; text-decoration: none; }
   font-size: 18px;
 }
 
-/* Evita saltos al cargar imágenes en grilla */
+/* Evita saltos al cargar imágenes */
 .thumb {
   width: 100%;
-  aspect-ratio: 3 / 2;  /* reserva altura antes de cargar */
+  aspect-ratio: 3 / 2;
   object-fit: cover;
   display: block;
   background: rgba(255,255,255,.04);
