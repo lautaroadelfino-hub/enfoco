@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import AdminUpload from "./components/AdminUpload";
 
 type Event = {
   id: string;
@@ -22,7 +23,14 @@ export default function App() {
   return (
     <div style={{ maxWidth: 900, margin: "0 auto", padding: 24, fontFamily: "system-ui" }}>
       <h1 style={{ fontSize: 28, fontWeight: 700 }}>ENFOCO</h1>
-      <p style={{ marginTop: 6, opacity: 0.75 }}>Eventos</p>
+
+      {/* ADMIN */}
+      <div style={{ marginTop: 16 }}>
+        <AdminUpload />
+      </div>
+
+      {/* EVENTOS */}
+      <p style={{ marginTop: 18, opacity: 0.75 }}>Eventos</p>
 
       {loading ? (
         <p style={{ marginTop: 18 }}>Cargando…</p>
@@ -33,7 +41,9 @@ export default function App() {
           {events.map((e) => (
             <div key={e.id} style={{ border: "1px solid #ddd", borderRadius: 12, padding: 14 }}>
               <div style={{ fontWeight: 700 }}>{e.torneo}</div>
-              <div style={{ opacity: 0.8 }}>{e.fecha} — {e.encuentro}</div>
+              <div style={{ opacity: 0.8 }}>
+                {e.fecha} — {e.encuentro}
+              </div>
               {e.lugar ? <div style={{ opacity: 0.65 }}>{e.lugar}</div> : null}
             </div>
           ))}
