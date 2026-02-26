@@ -4,8 +4,26 @@ import { CartItem, clearCart, getCart, removeFromCart } from "../lib/cart";
 export default function CartPanel() {
   const [items, setItems] = useState<CartItem[]>([]);
 
+  const refresh = () => setItems(getCart());
+
   useEffect(() => {
-    setItems(getCart());
+    refresh();
+
+    // 1) cambios desde otras pestañas
+    const onStorage = (e: StorageEvent) => {
+      if (e.key === "ENFOCO_CART_V1") refresh();
+    };
+
+    // 2) cambios en la misma pestaña (evento custom)
+    const onCustom = () => refresh();
+
+    window.addEventListener("storage", onStorage);
+    window.addEventListener("enfoco-cart", onCustom as any);
+
+    return () => {
+      window.removeEventListener("storage", onStorage);
+      window.removeEventListener("enfoco-cart", onCustom as any);
+    };
   }, []);
 
   const total = useMemo(() => items.reduce((acc, i) => acc + i.price, 0), [items]);
@@ -42,7 +60,10 @@ export default function CartPanel() {
                 </div>
 
                 <button
-                  onClick={() => setItems(removeFromCart(i.photoId))}
+                  onClick={() => {
+                    setItems(removeFromCart(i.photoId));
+                    window.dispatchEvent(new Event("enfoco-cart"));
+                  }}
                   style={{ padding: "10px 12px", borderRadius: 10 }}
                 >
                   Quitar
@@ -52,13 +73,12 @@ export default function CartPanel() {
           </div>
 
           <div style={{ marginTop: 12, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div style={{ fontSize: 18, fontWeight: 800 }}>
-              Total: ${total.toLocaleString("es-AR")}
-            </div>
+            <div style={{ fontSize: 18, fontWeight: 800 }}>Total: ${total.toLocaleString("es-AR")}</div>
             <button
               onClick={() => {
                 clearCart();
                 setItems([]);
+                window.dispatchEvent(new Event("enfoco-cart"));
               }}
               style={{ padding: "10px 12px", borderRadius: 10 }}
             >
