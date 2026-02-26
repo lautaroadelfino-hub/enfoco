@@ -66,6 +66,4 @@ export async function onRequestPost(context: any) {
   }
 
   return Response.json({ ok: true });
-}git add functions/api/admin/schema.ts
-git commit -m "Add schema initializer endpoint"
-git push
+}
