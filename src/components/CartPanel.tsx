@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CartItem, clearCart, getCart, removeFromCart } from "../lib/cart";
+import { type CartItem, clearCart, getCart, removeFromCart } from "../lib/cart";
 
 export default function CartPanel() {
   const [items, setItems] = useState<CartItem[]>([]);
