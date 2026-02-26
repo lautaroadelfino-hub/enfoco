@@ -2,14 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import EventGallery from "./components/EventGallery";
 import CartPanel from "./components/CartPanel";
 import AdminUpload from "./components/AdminUpload";
-
-type Event = {
-  id: string;
-  torneo: string;
-  fecha: string;
-  encuentro: string;
-  lugar?: string | null;
-};
+import { getCart } from "./lib/cart";
 
 function getRoute() {
   const h = (window.location.hash || "#/").replace("#", "");
@@ -22,16 +15,19 @@ function getRoute() {
 
 export default function App() {
   const [route, setRoute] = useState(getRoute());
-  const [events, setEvents] = useState<Event[]>([]);
-  const [loading, setLoading] = useState(true);
 
-  // Admin “habilitado” en este navegador
+  // Admin gate
   const [adminEnabled, setAdminEnabled] = useState(
     localStorage.getItem("ENFOCO_ADMIN_ENABLED") === "1"
   );
   const [adminKey, setAdminKey] = useState(localStorage.getItem("ENFOCO_ADMIN_KEY") || "");
   const [adminMsg, setAdminMsg] = useState<string | null>(null);
   const [adminBusy, setAdminBusy] = useState(false);
+
+  // Cart count (updates when cart changes)
+  const [cartCount, setCartCount] = useState(() => {
+    try { return getCart().length; } catch { return 0; }
+  });
 
   useEffect(() => {
     const onHash = () => setRoute(getRoute());
@@ -40,10 +36,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    fetch("/api/events")
-      .then((r) => r.json())
-      .then((data) => setEvents(data.events ?? []))
-      .finally(() => setLoading(false));
+    const refresh = () => {
+      try { setCartCount(getCart().length); } catch { setCartCount(0); }
+    };
+    refresh();
+    window.addEventListener("enfoco-cart", refresh as any);
+    window.addEventListener("storage", refresh);
+    return () => {
+      window.removeEventListener("enfoco-cart", refresh as any);
+      window.removeEventListener("storage", refresh);
+    };
   }, []);
 
   const content = useMemo(() => {
@@ -51,7 +53,6 @@ export default function App() {
     if (route === "carrito") return <CartPanel />;
 
     if (route === "admin") {
-      // Gate: solo muestra AdminUpload si validaste la key
       if (!adminEnabled) {
         return (
           <div className="card" style={{ padding: 16, marginTop: 18 }}>
@@ -83,6 +84,7 @@ export default function App() {
                     localStorage.setItem("ENFOCO_ADMIN_ENABLED", "1");
                     setAdminEnabled(true);
                     setAdminMsg("✅ Admin habilitado");
+                    window.location.hash = "#/admin";
                   } catch (e: any) {
                     setAdminMsg("❌ " + (e?.message ?? "Error"));
                   } finally {
@@ -117,34 +119,57 @@ export default function App() {
       );
     }
 
-    // Home
+    // HOME landing
     return (
-      <div className="card" style={{ padding: 16, marginTop: 18 }}>
-        <h2 className="sectionTitle">Eventos</h2>
-
-        {loading ? (
-          <p className="subtle">Cargando…</p>
-        ) : events.length === 0 ? (
-          <p className="subtle">Todavía no hay eventos.</p>
-        ) : (
-          <div style={{ display: "grid", gap: 10, marginTop: 10 }}>
-            {events.map((e) => (
-              <div key={e.id} className="card" style={{ padding: 14, boxShadow: "none" }}>
-                <div style={{ fontWeight: 800 }}>{e.torneo}</div>
-                <div className="subtle">{e.fecha} — {e.encuentro}</div>
-                {e.lugar ? <div className="subtle">{e.lugar}</div> : null}
+      <div style={{ marginTop: 18, display: "grid", gap: 14 }}>
+        <div className="card" style={{ padding: 18 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <h2 style={{ margin: 0, fontSize: 22, letterSpacing: ".04em" }}>Encontrá tus fotos</h2>
+              <div className="subtle" style={{ marginTop: 8, maxWidth: 640 }}>
+                Seleccioná el evento, filtrá por dorsal y comprá solo las fotos que querés.
               </div>
-            ))}
-          </div>
-        )}
+            </div>
 
-        <div className="hr" />
-        <div className="subtle">
-          Tip: entrá a <b>Galería</b> para filtrar por dorsal y agregar al carrito.
+            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+              <a className="btn btnPrimary" href="#/galeria">Ir a Galería</a>
+              <a className="btn" href="#/carrito">Ver Carrito</a>
+            </div>
+          </div>
+
+          <div className="hr" />
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))", gap: 10 }}>
+            <div className="card" style={{ padding: 14, boxShadow: "none" }}>
+              <div style={{ fontWeight: 800 }}>1) Elegí evento</div>
+              <div className="subtle" style={{ marginTop: 6 }}>
+                Torneo · fecha · encuentro
+              </div>
+            </div>
+            <div className="card" style={{ padding: 14, boxShadow: "none" }}>
+              <div style={{ fontWeight: 800 }}>2) Filtrá por dorsal</div>
+              <div className="subtle" style={{ marginTop: 6 }}>
+                Más rápido para encontrarte
+              </div>
+            </div>
+            <div className="card" style={{ padding: 14, boxShadow: "none" }}>
+              <div style={{ fontWeight: 800 }}>3) Comprá y descargá</div>
+              <div className="subtle" style={{ marginTop: 6 }}>
+                Descarga HD después del pago
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="card" style={{ padding: 16 }}>
+          <div style={{ fontWeight: 800 }}>Tip</div>
+          <div className="subtle" style={{ marginTop: 6 }}>
+            Si no encontrás tu foto con dorsal, probá sin filtro y ordená por fecha.
+          </div>
         </div>
       </div>
     );
-  }, [route, adminEnabled, adminKey, adminBusy, adminMsg, events, loading]);
+  }, [route, adminEnabled, adminKey, adminBusy, adminMsg]);
 
   return (
     <>
@@ -158,9 +183,11 @@ export default function App() {
           <div className="nav">
             <a className="btn" href="#/">Inicio</a>
             <a className="btn" href="#/galeria">Galería</a>
-            <a className="btn" href="#/carrito">Carrito</a>
+            <a className="btn" href="#/carrito">
+              Carrito{cartCount > 0 ? ` (${cartCount})` : ""}
+            </a>
 
-            {/* Admin NO visible para todos */}
+            {/* Admin solo si está habilitado */}
             {adminEnabled ? <a className="btn btnPrimary" href="#/admin">Admin</a> : null}
           </div>
         </div>
