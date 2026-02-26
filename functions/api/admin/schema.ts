@@ -1,5 +1,11 @@
+export async function onRequestGet() {
+  return Response.json({
+    ok: true,
+    howToUse: "POST this endpoint with header x-admin-key to initialize DB schema"
+  });
+}
+
 export async function onRequestPost(context: any) {
-  // Seguridad simple por ahora (clave en env var)
   const key = context.request.headers.get("x-admin-key");
   if (!key || key !== context.env.ADMIN_KEY) {
     return new Response("Unauthorized", { status: 401 });
@@ -60,4 +66,6 @@ export async function onRequestPost(context: any) {
   }
 
   return Response.json({ ok: true });
-}
+}git add functions/api/admin/schema.ts
+git commit -m "Add schema initializer endpoint"
+git push
