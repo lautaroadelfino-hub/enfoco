@@ -124,7 +124,7 @@ export default function EventGallery() {
                 const imgUrl = "/api/" + p.preview_key;
                 return (
                   <div key={p.id} style={{ border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
-                    <img src={imgUrl} style={{ width: "100%", display: "block" }} />
+                    <img src={imgUrl} className="thumb" loading="lazy" />
                     <div style={{ padding: 10 }}>
                       <div style={{ fontWeight: 700 }}>${p.price_ars.toLocaleString("es-AR")}</div>
                       <div style={{ opacity: 0.75 }}>Dorsal: {p.dorsal ?? "—"}</div>
