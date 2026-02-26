@@ -1,11 +1,11 @@
 export async function onRequestGet(context: any) {
-  // En catch-all de Pages: context.params.path es string (puede incluir "/")
-  const rest = context.params?.path ? String(context.params.path) : "";
-  const key = rest ? `preview/${rest}` : "";
+  const p = context.params?.path;
+  const rest = Array.isArray(p) ? p.join("/") : (p ? String(p) : "");
 
-  if (!key || key.endsWith("preview/")) {
-    return new Response("Missing path", { status: 400 });
-  }
+  if (!rest) return new Response("Missing path", { status: 400 });
+
+  // esto busca en R2: preview/<rest>
+  const key = `preview/${rest}`;
 
   const obj = await context.env.R2.get(key);
   if (!obj) return new Response("Not found", { status: 404 });
