@@ -7,6 +7,11 @@ export type CartItem = {
 
 const KEY = "ENFOCO_CART_V1";
 
+function notify() {
+  // Actualiza componentes en la misma pestaña
+  window.dispatchEvent(new Event("enfoco-cart"));
+}
+
 export function getCart(): CartItem[] {
   try {
     return JSON.parse(localStorage.getItem(KEY) || "[]");
@@ -17,23 +22,27 @@ export function getCart(): CartItem[] {
 
 export function setCart(items: CartItem[]) {
   localStorage.setItem(KEY, JSON.stringify(items));
+  notify();
 }
 
 export function addToCart(item: CartItem) {
   const items = getCart();
-  if (!items.some(i => i.photoId === item.photoId)) {
+  if (!items.some((i) => i.photoId === item.photoId)) {
     items.push(item);
-    setCart(items);
+    localStorage.setItem(KEY, JSON.stringify(items));
+    notify();
   }
   return items;
 }
 
 export function removeFromCart(photoId: string) {
-  const items = getCart().filter(i => i.photoId !== photoId);
-  setCart(items);
+  const items = getCart().filter((i) => i.photoId !== photoId);
+  localStorage.setItem(KEY, JSON.stringify(items));
+  notify();
   return items;
 }
 
 export function clearCart() {
-  setCart([]);
+  localStorage.setItem(KEY, JSON.stringify([]));
+  notify();
 }

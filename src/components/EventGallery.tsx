@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { addToCart } from "../lib/cart";
 
 type EventRow = {
@@ -12,7 +12,7 @@ type PhotoRow = {
   id: string;
   event_id: string;
   dorsal: number | null;
-  preview_key: string; // "preview/ev.../ph....jpg"
+  preview_key: string;
   price_ars: number;
 };
 
@@ -23,6 +23,22 @@ export default function EventGallery() {
   const [photos, setPhotos] = useState<PhotoRow[]>([]);
   const [loadingEvents, setLoadingEvents] = useState(true);
   const [loadingPhotos, setLoadingPhotos] = useState(false);
+
+  // Toast
+  const [toast, setToast] = useState<string | null>(null);
+  const toastTimer = useRef<number | null>(null);
+
+  const showToast = (msg: string) => {
+    setToast(msg);
+    if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    toastTimer.current = window.setTimeout(() => setToast(null), 1500);
+  };
+
+  useEffect(() => {
+    return () => {
+      if (toastTimer.current) window.clearTimeout(toastTimer.current);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/events")
@@ -105,7 +121,7 @@ export default function EventGallery() {
               }}
             >
               {photos.map((p) => {
-                const imgUrl = "/api/" + p.preview_key; // => /api/preview/...
+                const imgUrl = "/api/" + p.preview_key;
                 return (
                   <div key={p.id} style={{ border: "1px solid #eee", borderRadius: 12, overflow: "hidden" }}>
                     <img src={imgUrl} style={{ width: "100%", display: "block" }} />
@@ -121,7 +137,7 @@ export default function EventGallery() {
                             previewKey: p.preview_key,
                             dorsal: p.dorsal
                           });
-                          alert("Agregada al carrito ✅");
+                          showToast("Agregada al carrito ✅");
                         }}
                         style={{
                           marginTop: 8,
@@ -141,6 +157,36 @@ export default function EventGallery() {
           )}
         </div>
       )}
+
+      {/* TOAST */}
+      <div
+        style={{
+          position: "fixed",
+          right: 16,
+          bottom: 16,
+          pointerEvents: "none",
+          opacity: toast ? 1 : 0,
+          transform: toast ? "translateY(0)" : "translateY(8px)",
+          transition: "opacity 150ms ease, transform 150ms ease",
+          zIndex: 9999
+        }}
+      >
+        {toast ? (
+          <div
+            style={{
+              pointerEvents: "auto",
+              background: "rgba(20,20,20,0.92)",
+              color: "white",
+              padding: "10px 12px",
+              borderRadius: 12,
+              fontWeight: 700,
+              boxShadow: "0 8px 24px rgba(0,0,0,0.25)"
+            }}
+          >
+            {toast}
+          </div>
+        ) : null}
+      </div>
     </div>
   );
 }
