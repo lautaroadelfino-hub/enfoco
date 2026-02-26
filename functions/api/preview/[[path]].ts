@@ -3,7 +3,9 @@ export async function onRequestGet(context: any) {
   const rest = Array.isArray(p) ? p.join("/") : (p ? String(p) : "");
   if (!rest) return new Response("Missing path", { status: 400 });
 
-  const key = `preview/${rest}`; // busca en R2: preview/test.jpg
+  // Si pedís /api/preview/test.jpg -> busca preview/test.jpg en R2
+  const key = `preview/${rest}`;
+
   const obj = await context.env.R2.get(key);
   if (!obj) return new Response("Not found", { status: 404 });
 
